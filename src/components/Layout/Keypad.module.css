@@ -1,0 +1,6 @@
+.keypad {
+    display: grid;
+    flex: 1;
+    grid-template-columns: auto auto auto auto;
+    margin: 2vh;
+}

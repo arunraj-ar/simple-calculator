@@ -1,0 +1,32 @@
+.btn {
+  background-color: #181818;
+  height: 75px;
+  width: 75px;
+  font-size: 3.6rem;
+  margin: 10px;
+  color: #b3b3b3;
+  border: none;
+  border-radius: 10px;
+  box-shadow: 3px 3px 6px rgba(0, 0, 0, 0.25),
+    -3px -3px 6px rgba(56, 56, 56, 0.2);
+  user-select: none;
+}
+@media (hover: hover) {
+  .btn:hover {
+    color: #eeeeee;
+    box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.35),
+      -2px -2px 4px rgba(56, 56, 56, 0.3);
+  }
+}
+.btn:active {
+  color: #eeeeee;
+  box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.55),
+    -1px -1px 1px rgba(56, 56, 56, 0.5);
+}
+
+@media only screen and (max-width: 600px) {
+  .btn {
+    height: 7.5vm;
+    width: 7.5vm;
+  }
+}
