@@ -7,6 +7,36 @@ const defaultInputState = {
 const symbols = ["+", "-", "*", "/", "^", "%"];
 
 //////////////////////fix the below methods
+
+const infixToPostfix = (infixArray) => {
+  let stack = [];
+  let result = [];
+
+  for(let i=0; i< infixArray.length ; i++){
+    let item = infixArray[i];
+    if(isNumericString(item)){
+      result.push(item)
+    } else if( item === "("){
+      stack.push(item)
+    } else if(item === ")"){
+      while(stack[stack.length - 1] !== "("){
+        result.push(stack.pop());
+      }
+      stack.pop();
+    } else {
+      while(stack.length !== 0 && getPrecedence(item) <= getPrecedence(stack[stack.length - 1]) ){
+        result.push(stack.pop())
+      }
+      stack.push(item)
+    }
+  }
+  while (stack.length !== 0){
+    result.push(stack.pop())
+  }
+  console.log("postfixArray: ",result)
+  return result;
+}
+/////////////remove the convert to postfix function and change the keys to brackets instead of power and %
 function convertToPostfix(infix) {
   var output = [];
   var stack = [];
@@ -56,7 +86,7 @@ function isNumericString(str) {
 }
 
 function solvePostFix(postfixString) {
-  postfixString = convertToPostfix(postfixString.join(""));
+  postfixString = infixToPostfix(postfixString);
   // postfixString = postfixString.split(" ");
   let resultArr = [];
   let max = postfixString.length;
