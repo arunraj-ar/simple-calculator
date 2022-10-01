@@ -5,8 +5,8 @@ const defaultInputState = {
   value: [],
   bracketCounter: 0,
 };
-const symbols = ["+", "-", "*", "/"];
-const neverAtStart = ["*", "/",")","0",0];
+const symbols = ["+", "-", "*", "/","."];
+const operators = ["+","-","*","/"]
 
 
 //////////////////////fix the below methods
@@ -38,40 +38,6 @@ const infixToPostfix = (infixArray) => {
   }
   console.log("postfixArray: ",result)
   return result;
-}
-/////////////remove the convert to postfix function and fix the add ITEM scenario
-function convertToPostfix(infix) {
-  var output = [];
-  var stack = [];
-  for (var i = 0; i < infix.length; i++) {
-     var ch = infix.charAt(i);
-     if (ch === '+' || ch === '-' || ch === '*' || ch === '/') {
-        while (stack.length !== 0 && stack[stack.length - 1] !== '(' &&
-        getPrecedence(ch) <= getPrecedence(stack[stack.length - 1])) {
-           output += stack.pop();
-           output += ' ';
-        }
-        stack.push(ch);
-     }
-     else if (ch === '(') {
-        stack.push(ch);
-     }
-     else if (ch === ')') {
-        while (stack.length !== 0 && stack[stack.length - 1] !== '(') {
-           output += stack.pop();
-           output += ' ';
-        }
-        stack.pop();
-     } else {
-        output+=ch;
-     }
-  }
-  while (stack.length !== 0) {
-     output += stack.pop();
-     output += ' ';
-  }
-  console.log("output: ",output)
-  return output;
 }
 function getPrecedence(ch) {
   if (ch === '+' || ch === '-') {
@@ -130,10 +96,45 @@ function solvePostFix(postfixString) {
 /////////////////////////////////fix the above methods
 
 
+const fixInfix = (inputArray) => {
+  let infixArray = [];
+  let n = inputArray.length;
+  for (let i = 0; i < n; i++) {
+    const current = inputArray[i];
+    const next = inputArray[i+1];
+    const next1 = inputArray[i+2];
+    if((isNumericString(current) && next === "(") || (current === ")" && isNumericString(next))){
+      infixArray.push(current);
+      infixArray.push("*");
+    }
+    else if((current === "*" || current === "/" ) && (next === "+" || next === "-")){
+      infixArray.push(current);
+      infixArray.push("(");
+      infixArray.push("0");
+      infixArray.push(next);
+      infixArray.push(next1);
+      infixArray.push(")");
+      i++;
+      i++;
+    }else if((current === "+" && next === "-") || (current === "-" && next === "+")){
+      infixArray.push("-");
+      i++;
+    } else if((current === "+" && next === "+") || (current === "-" && next === "-")){
+      infixArray.push("+");
+      i++;
+    }
+    else {
+      infixArray.push(current);
+    }
+  }
+  console.log("infixArray: ",infixArray)
+  return infixArray;
+}
+
 const canSucceed = (previous, current ) => {
   const cantSucceed = {
-    "+": ["*","/","+"],
-    "-": ["*","/","-"],
+    "+": ["*","/"],
+    "-": ["*","/"],
     "*": ["*","/"],
     "/": ["*","/"],
     ".": ["(",")","*","/","-","+"]
@@ -145,11 +146,60 @@ const canSucceed = (previous, current ) => {
 }
 
 const canAppendToPrevious = (previous, current) => {
-  return ( (isNumericString(previous) && isNumericString(current)) || (isNumericString(previous) && current === ".") || (previous === "." && isNumericString(current)) )
+  return ( (isNumericString(previous) && isNumericString(current)) || (isNumericString(previous) && current === ".") || (previous === "." && isNumericString(current)))
 }
 
 const inputReducer = (state, action) => {
   if (action.type === "ADD") {
+    if(state.value.length === 1 && (state.value[0] === "Infinity" || state.value[0] === "-Infinity" || state.value[0] === "NaN")){ //make this to replace the string with new value instead of clearing
+      return {
+        value: [],
+        bracketCounter: 0,
+      };
+    }
+    if(action.item === "."){
+      if(state.value.at(-1) && state.value.at(-1).split(".").length - 1 >= 1){
+        return {
+          value: state.value,
+          bracketCounter: state.bracketCounter,
+        };
+      }
+    }
+    if(state.value.at(-1) === "(" && !isNumericString(action.item) ){
+      let updatedValue = state.value;
+      let bracketCounter = state.bracketCounter
+      if(action.item === "."){
+        updatedValue = updatedValue.concat(action.item);
+      } else if( operators.includes(action.item)){
+        if(operators.includes(state.value.at(-3))){
+          updatedValue = state.value.slice(0,-3).concat(action.item);
+        }
+        else if(operators.includes(state.value.at(-2))){
+          updatedValue = state.value.slice(0,-2).concat(action.item);
+        } else {
+          updatedValue = state.value.slice(0,-1).concat(action.item);
+        }
+        bracketCounter--;
+      } else if(action.item === ")"){
+        if(bracketCounter > 1){
+          updatedValue = state.value.slice(0,-1).concat(action.item);
+          bracketCounter-=2;
+        }
+      }
+      return {
+        value: updatedValue,
+        bracketCounter: bracketCounter,
+      };
+    }
+    if(state.value.length > 0){
+      console.log("decimal length: ",state.value.at(-1).split(".").length - 1)
+      if(state.value.at(-1).split(".").length - 1 > 1){
+        return {
+          value: state.value,
+          bracketCounter: state.bracketCounter,
+        };
+      }
+    }
     let noOfBrackets = state.bracketCounter
     if(action.item === "("){
       noOfBrackets++
@@ -204,43 +254,6 @@ const inputReducer = (state, action) => {
         };
       }
     }
-
-
-
-
-    
-    // if(action.item === "("){
-    //   bracketCounter++
-    // } else if (action.item === ")"){
-    //   bracketCounter--
-    // }
-    // if (state.value.length === 0 && neverAtStart.includes(action.item)) {
-    //   console.log(state.value.length);
-    //   return {
-    //     value: [],
-    //   };
-    // } else if (
-    //   symbols.includes(action.item) &&
-    //   symbols.includes(state.value[state.value.length - 1])
-    // ) {
-    //   const updatedValue = state.value.slice(0, -1).concat(action.item);
-    //   return {
-    //     value: updatedValue,
-    //   };
-    // } else {
-    //   if(state.value.length !== 0 && (isNumericString(action.item) || action.item === "." ) && (isNumericString(state.value[state.value.length - 1]) || state.value[state.value.length - 1] === "." )){
-    //     console.log("action.item from if: ",action.item)
-    //     const updatedValue = state.value.slice(0, -1).concat(state.value[state.value.length - 1] + action.item);
-    //       return {
-    //         value: updatedValue,
-    //       };
-    //   } else {
-    //     const updatedValue = state.value.concat(action.item);
-    //     return {
-    //       value: updatedValue,
-    //     };
-    //   }
-    // }
   }
   if (action.type === "CLEAR") {
     const updatedValue = [];
@@ -250,6 +263,19 @@ const inputReducer = (state, action) => {
     };
   }
   if (action.type === "REMOVE") {
+    if(state.value.length === 1 && (state.value[0] === "Infinity" || state.value[0] === "-Infinity" || state.value[0] === "NaN")){
+      return {
+        value: [],
+        bracketCounter: 0,
+      };
+    }
+    if(state.value.length > 0 && state.value.at(-1).length > 1){
+      const updatedValue = [...state.value.slice(0, -1),state.value.at(-1).slice(0,-1)];
+      return {
+        value: updatedValue,
+        bracketCounter: state.bracketCounter,
+      };
+    }
     const updatedValue = state.value.slice(0, -1);
     let noOfBrackets = state.bracketCounter;
     const totalBrackets = state.value.filter( item => item === "(" || item === ")")
@@ -264,15 +290,24 @@ const inputReducer = (state, action) => {
     };
   }
   if (action.type === "CALCULATE") {
+    if(state.value.length === 1 && (state.value[0] === "Infinity" || state.value[0] === "-Infinity" || state.value[0] === "NaN")){
+      return {
+        value: [],
+        bracketCounter: 0,
+      };
+    }
     console.log("calculating: ",state.value, "\nbracketCounter: ",state.bracketCounter, "\nnumber counter", state.value.filter(item =>isNumericString(item)).length);
-    if(state.bracketCounter!==0 || state.value.filter(item =>isNumericString(item)).length === 0){
+    if(state.bracketCounter<0 || state.value.filter(item =>isNumericString(item)).length < 2){
       return {
         value: state.value,
         bracketCounter: state.bracketCounter,
       };
     }
-    let expression = symbols.includes(state.value[state.value.length - 1]) ? state.value.slice(0, -1) : state.value
-    expression = symbols.includes(expression[0]) ? ["0"].concat(expression) : expression
+    let expression = operators.includes(state.value.at(-1)) || state.value.at(-1) === "(" ? state.value.concat("0") : state.value
+    expression = operators.includes(expression[0]) ? ["0"].concat(expression) : expression
+    expression = state.value.at(-1).at(-1) === "." ? state.value.slice(0,-1).concat(state.value.at(-1)+"0"): expression
+    console.log("expression: ",expression)
+    expression = fixInfix(expression);
     const updatedValue = [solvePostFix(expression)[0].toString()]
     console.log("updated value = ",updatedValue)
     return {
