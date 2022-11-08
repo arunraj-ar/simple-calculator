@@ -5,11 +5,13 @@ import InputContext from "../../store/input-context";
 const Screen = (props) => {
   const inpCtx = useContext(InputContext);
   let screenClass = classes.screen;
-  if (inpCtx.value.length < 10) {
+  let inputLen = inpCtx.value.join("").length
+  console.log(inputLen)
+  if (inputLen < 10) {
     screenClass = classes.screen;
-  } else if (inpCtx.value.length <= 19) {
+  } else if (inputLen <= 19) {
     screenClass = `${classes.screen} ${classes.rem3Font}`;
-  } else if (inpCtx.value.length > 19) {
+  } else if (inputLen > 19) {
     screenClass = `${classes.screen} ${classes.rem2Font}`;
   }
 

@@ -5,8 +5,8 @@ import classes from "./Keypad.module.css";
 
 const keys = [
   "AC",
-  "power",
-  "percent",
+  "open",
+  "close",
   "divide",
   "7",
   "8",
@@ -27,8 +27,8 @@ const keys = [
 ];
 
 const symbols = {
-  power: "^",
-  percent: "%",
+  open: "(",
+  close: ")",
   divide: "/",
   multiply: "*",
   minus: "-",
@@ -54,7 +54,6 @@ const icon = (icon) => {
 const Keypad = (props) => {
   const inpCtx = useContext(InputContext);
   const onClickHandler = (value) => {
-    console.log("button clicked from keypad: ", value);
     if (value === "back") {
       inpCtx.removeItem();
     } else if (value === "AC") {
